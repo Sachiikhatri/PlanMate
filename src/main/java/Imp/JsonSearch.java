@@ -363,66 +363,71 @@ public class JsonSearch {
     }
 }
 */
-package Imp;
-
 import org.json.JSONObject;
+import org.json.JSONArray;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.io.IOException;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
-public class JsonSearch {
-    public static void main(String[] args) {
-        String jsonFilePath = "outputF.json";
-        InvertedIndex invertedIndex = new InvertedIndex();
+public class InvertedIndex {
 
-        // Build the inverted index
-        try {
-            invertedIndex.buildIndex(jsonFilePath);
-            System.out.println("Inverted index built successfully!");
-        } catch (IOException e) {
-            System.out.println("Error reading the file: " + e.getMessage());
-            return;
-        }
+    private Map<String, List<JSONObject>> index;
 
-        Scanner scanner = new Scanner(System.in);
+    public InvertedIndex() {
+        this.index = new HashMap<>();
+    }
 
-        while (true) {
-            System.out.println("Enter the word to search (or type 'exit' to quit): ");
-            String searchInput = scanner.nextLine().toLowerCase();
+    // Build the inverted index from the JSON file
+    public void buildIndex(String jsonFilePath) throws IOException {
+        String content = new String(Files.readAllBytes(Paths.get(jsonFilePath)));
+        JSONArray jsonArray = new JSONArray(content);
 
-            if (searchInput.equals("exit")) {
-                break;
-            }
-
-            // Perform search using the inverted index
-            List<JSONObject> results = invertedIndex.search(searchInput);
-
-            if (results.isEmpty()) {
-                System.out.println("No matching data blocks found.");
-            } else {
-                System.out.println("\nPlans containing the word '" + searchInput + "':");
-                for (JSONObject result : results) {
-                    displayJsonContent(result);
-                    System.out.println("------------------------------------");
-                }
-            }
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject dataBlock = jsonArray.getJSONObject(i);
+            indexDocument(dataBlock, i);
         }
     }
 
-    public static void displayJsonContent(JSONObject jsonObject) {
-        for (String key : jsonObject.keySet()) {
-            Object value = jsonObject.get(key);
+    // Index a single document (JSONObject)
+    private void indexDocument(JSONObject document, int docId) {
+        for (String key : document.keySet()) {
+            Object value = document.get(key);
 
             if (value instanceof String) {
-                System.out.println(key + ": " + value);
+                addToIndex((String) value, document);
             } else if (value instanceof JSONObject) {
-                System.out.println(key + ": ");
-                displayJsonContent((JSONObject) value);
-            } else {
-                System.out.println(key + ": " + value);
+                indexDocument((JSONObject) value, docId);
+            } else if (value instanceof JSONArray) {
+                indexJsonArray((JSONArray) value, docId);
             }
         }
     }
+
+    // Index a JSON array (recursive)
+    private void indexJsonArray(JSONArray jsonArray, int docId) {
+        for (int i = 0; i < jsonArray.length(); i++) {
+            Object value = jsonArray.get(i);
+            if (value instanceof String) {
+                addToIndex((String) value, jsonArray.getJSONObject(i));
+            } else if (value instanceof JSONObject) {
+                indexDocument((JSONObject) value, docId);
+            }
+        }
+    }
+
+    // Add a word to the index
+    private void addToIndex(String word, JSONObject document) {
+        word = word.toLowerCase();
+        index.computeIfAbsent(word, k -> new ArrayList<>()).add(document);
+    }
+
+    // Search the inverted index for a term
+    public List<JSONObject> search(String word) {
+        word = word.toLowerCase();
+        return index.getOrDefault(word, Collections.emptyList());
+    }
 }
+
 
