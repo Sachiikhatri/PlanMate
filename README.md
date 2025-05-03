@@ -1,6 +1,6 @@
 
 
-````markdown
+
  🌐 PlanMate - Home Internet Service Provider Analysis
 
 PlanMate is a Java-based application designed to analyze and compare home Internet Service Providers (ISPs) across Canada. The system gathers data from major ISP websites, evaluates key internet service features, and provides intelligent recommendations tailored to user needs.
@@ -131,9 +131,4 @@ MIT License
 
 For questions, feedback, or contributions, please open an issue or reach out to the project team.
 
-```
 
----
-
-Let me know if you'd like a matching `pom.xml` template or Java `main()` class to get started.
-```
