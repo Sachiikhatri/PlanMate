@@ -1,6 +1,4 @@
-Thanks! Since you used **Java** instead of Python, here’s the updated `README.md` with appropriate changes to the tech stack, structure, and execution instructions:
 
----
 
 ````markdown
  🌐 PlanMate - Home Internet Service Provider Analysis
